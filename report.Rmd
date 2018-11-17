@@ -1,0 +1,113 @@
+---
+title: "Report"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Загрузка данных
+
+## libraries
+```{r}
+library(ggplot2)
+library(GGally)
+library(knitr)
+library(dplyr)
+library(FactoMineR)
+library(factoextra)
+```
+
+
+## Loading
+```{r}
+load('druguse.RData')
+```
+
+## Descriptive analysis
+
+#The substance use numbers all range from 0 to 6. These mean: 0: never used.
+#1: used over a decade ago. 2: used in the last decade. 3,4,5,6 used in the last
+#year, month, week, day (respectively).
+
+
+```{r}
+summary(druguse)
+```
+
+```{r}
+ggplot(druguse, aes(agegroup))+
+  geom_bar(aes(fill = agegroup))+
+  labs(x = 'Группы возрастов', y = '', title = 'Столбчатая диаграмма')+
+  guides(fill = F)
+```
+
+
+```{r}
+summary(druguse$education)
+ggplot(druguse, aes(1, education))+
+  geom_boxplot()
+```
+
+
+
+
+
+```{r}
+ggpairs(data = subset(druguse, select = c(agegroup, gender, education, caffeine)),
+        mapping = aes(color = agegroup),
+        upper = list(continuous = wrap("density"), combo = "box_no_facet"),
+        lower = list(continuous = wrap("points"), combo = wrap("dot_no_facet")))
+
+
+ggplot(druguse, aes(caffeine, agegroup))+
+  geom_point(aes(color = agegroup))
+
+ggplot(druguse, aes(caffeine, agegroup))+
+  geom_jitter(aes(color = agegroup))
+```
+
+
+```{r}
+knitr::kable(as.matrix(sapply(druguse, typeof)))
+```
+
+```{r}
+ncol(druguse)
+nrow(druguse)
+```
+
+Number of observations is `r nrow(druguse)`.
+Number of variables is `r ncol(druguse)`.
+
+
+
+```{r}
+druguse_psych <- druguse %>% select('neuroticism', 'extraversion', 'opentoexperience', 'agreeableness', 'conscientiousness', 'impulsiveness', 'sensation')
+cluster <- druguse_psych %>% kmeans(2)
+druguse_psych$cluster <- cluster$cluster
+table(druguse$cluster)
+
+
+
+
+psa_res <- PCA(druguse_psych)
+druguse_psych$cluster <- as.factor(druguse_psych$cluster)
+fviz_pca_ind(psa_res,
+             geom.ind = "point", 
+             col.ind = druguse_psych$cluster, 
+             palette = c("#00AFBB", "#E7B800"),
+             addEllipses = TRUE,
+             legend.title = "Groups"
+             )
+```
+
+
+
+
+```{r}
+model <- lm(extraversion ~. - UseLevel - severity - any, druguse)
+summary(model)
+```
+
