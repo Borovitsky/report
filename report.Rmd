@@ -61,8 +61,7 @@ ggpairs(data = subset(druguse, select = c(agegroup, gender, education, caffeine)
         lower = list(continuous = wrap("points"), combo = wrap("dot_no_facet")))
 
 
-ggplot(druguse, aes(caffeine, agegroup))+
-  geom_point(aes(color = agegroup))
+
 
 ggplot(druguse, aes(caffeine, agegroup))+
   geom_jitter(aes(color = agegroup))
